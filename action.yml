@@ -1,0 +1,25 @@
+name: 'Add PR Labels'
+description: 'Adds argocd-deploy and app-specific labels to a PR with random colors'
+inputs:
+  app_name:
+    description: 'The name of the application (e.g., krew-test-app-api)'
+    required: true
+  pr_number:
+    description: 'The Pull Request number'
+    required: true
+  token:
+    description: 'GitHub Token'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+  - name: Add labels
+    shell: bash
+    env:
+      GH_TOKEN: ${{ inputs.token }}
+      GH_REPO: ${{ github.repository }}
+    run: |
+      gh label create "argocd-deploy" --description "Ready to deploy" || true
+      gh label create "app:${{ inputs.app_name }}" --description "App: ${{ inputs.app_name }}" || true
+      gh pr edit ${{ inputs.pr_number }} --add-label "argocd-deploy" --add-label "app:${{ inputs.app_name }}"
